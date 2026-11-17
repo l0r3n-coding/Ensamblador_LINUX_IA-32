@@ -2,7 +2,7 @@
 	Debe de:
 	- Abrir un archivo fuente					| Ya
 	- Leerlo línea por líneas					| Ya
-	- Almacenar las líneas en memoria dinámica	| Ya?
+	- Almacenar las líneas en memoria dinámica	| Ya
 	- Conservar el número de la líneas			| Ya
 */
 
@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 {
 	// Esta estructura es sacada de clase :D
 	FILE *archivo;
-	char caracter[];
 
 	if (argc<2){
 		printf("Error, faltan argumentos\n");
@@ -25,20 +24,24 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	char **lineas;			// Doble apuntador para almacenar todas las líneas
-	char *linea_actual;		// Apuntador a la línea que se está leyendo
-	int len = 0;			// Tamaño de la cadena
-	int n = 1;				// Contador de los caracteres
+	char **lineas;				// Doble apuntador, almacena la direccion de cada cadena
+	char *linea_actual = NULL;	// Apuntador a la línea que se está leyendo
+	int len = 0;				// Tamaño de la cadena
+	int n = 0;					// Contador del numero de linea
 
 	/* ¿Como funciona getline? Este, a grandes razgos, pide memoria nueva
 		mediante malloc, al pasarle linea_actual (la cual es NULL) y len
 		(el cual es 0), pide memoria mediante malloc para guardar la linea.
-		Además, la lee hasta que encuentra un \n
-	*/
-	while(getline(&linea_actual, &len, archivo)){
+		Además, la lee hasta que encuentra un \n, y cuando se queda sin lineas,
+		arroja un -1				*/
+	while(getline(&linea_actual, &len, archivo)!= -1){
+		lineas = realloc(lineas, (n+1)*sizeof(char*));
+		/*	realloc reajusta el arreglo de lineas (Como se dijo antes, arreglo de direcciones)
+			añadiendo otro espacio de dirección (char*). Además de que es multiplicado por el
+			numero de lineas hasta ahora, para aumentarlo de uno en uno			*/
 
-		lineas = realloc(lineas, (nL+1)*sizeof(char*));
-
+		// Se copia la dirección de memoria donde getline guardó la linea leída, en la
+		//   posición actual del arreglo (por ejemplo, 0)
 		lineas[n] = linea_actual;
 		linea_actual = NULL;
 		n++;
