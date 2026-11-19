@@ -151,6 +151,17 @@ static int es_numero(char *palabra){ // determina si una palabra que leyo lexer 
     return 1;
 }
 
+/*
+Creo que faltarian 5 funciones que son las de los tokens. 
+1. Que reciba la palabra y determine que es, de los que puse ahorita. No se como hacerle para que se pueda leer tanto en minuscula como mayuscula.
+2. Guardar tokens y su tipo, como los que puso la maestra en el doc. 
+3.  El que analice las lines del archivo .asm y las recorra e identifique. 
+4. Funcion que libere la memoria dinamica utilizada por los tokens y los lexemas 
+5. Funcion que recorra el arreglo de tokens y de el tipo, lexema y numero de linea
+No se por ejemplo que muestre : MNEMONICO mov Linea 1, REGISTRO eax Linea 1, COMA , Linea 1, NUMERO 10 Linea 1. Algo así no se 
+Hasta aqui mi reporte Joaquin
+*/
+ 
 
 
 
