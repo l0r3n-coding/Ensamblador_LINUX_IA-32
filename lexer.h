@@ -10,8 +10,7 @@ typedef enum{
     TOKEN_CORCHETE_ABRE,    // "["
     TOKEN_CORCHETE_CIERRA,  // "]"
     TOKEN_OPERADOR,         
-    TOKEN_DIRECTIVA,
-    TOKEN_FIN_LINEA,
+    TOKEN_DIRECTIVA,        // "section", ".data"
     TOKEN_DESCONOCIDO
 } TipoToken;
 
