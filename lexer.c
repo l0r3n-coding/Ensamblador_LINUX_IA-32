@@ -4,9 +4,13 @@
 #include <ctype.h>
 #include "lexer.h"
 
+void minusculas(){
+    
+}
+
 
 // En orden del documento de la profesora
-static int es_registro(char *lpalabra) {            // Registros
+static int es_registro(char *palabra) {            // Registros
     if (strcmp(palabra, "eax") == 0) return 1;
     if (strcmp(palabra, "ebx") == 0) return 1;
     if (strcmp(palabra, "ecx") == 0) return 1;
