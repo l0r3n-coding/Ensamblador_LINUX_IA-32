@@ -2,26 +2,25 @@
 #define lexer_h
 
 typedef enum{
-    TOKEN_MNEMONICO,
-    TOKEN_REGISTRO,
-    TOKEN_IDENTIFICADOR,
-    TOKEN_NUMERO,
-    TOKEN_COMA,
-    TOKEN_CORCHETE_ABRE,
-    TOKEN_CORCHETE_CIERRA,
-    TOKEN_OPERADOR,
+    TOKEN_MNEMONICO,        // MOV, ADD
+    TOKEN_REGISTRO,         // Ej. EAX
+    TOKEN_IDENTIFICADOR,    // "while:"
+    TOKEN_NUMERO,           // "10"
+    TOKEN_COMA,             // ","
+    TOKEN_CORCHETE_ABRE,    // "["
+    TOKEN_CORCHETE_CIERRA,  // "]"
+    TOKEN_OPERADOR,         
     TOKEN_DIRECTIVA,
     TOKEN_FIN_LINEA,
     TOKEN_DESCONOCIDO
-}
+} TipoToken;
 
 typedef struct {
     TipoToken tipo;
     char *lexema;
     size_t numeroLinea;
-    size_t columna;
 } Token;
 };
 
 
-#endif
+#endif                      //lexer.h
