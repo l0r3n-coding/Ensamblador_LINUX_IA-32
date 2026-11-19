@@ -4,7 +4,9 @@
 #include <ctype.h>
 #include "lexer.h"
 
-static int es_registro(char *lpalabra) {
+
+// En orden del documento de la profesora
+static int es_registro(char *lpalabra) {            // Registros
     if (strcmp(palabra, "eax") == 0) return 1;
     if (strcmp(palabra, "ebx") == 0) return 1;
     if (strcmp(palabra, "ecx") == 0) return 1;
@@ -17,56 +19,99 @@ static int es_registro(char *lpalabra) {
 }
 // esto sigue asi con todas las combinaciones de las otras cosas aaaa mi cerebro = YA
 
-// Comprueba si la palabra es una instruccion
-static int es_mnemonico(char *palabra) {
+static int es_mnemonico(char *palabra) {            // Comprueba si la palabra es una instruccion
 
-    // Movimiento de datos
+    // En el oden del documento
+    // 3. Movimiento de datos
     if (strcmp(palabra, "mov") == 0) return 1;
-    if (strcmp(palabra, "movzx") == 0) return 1;
-    if (strcmp(palabra, "movsx") == 0) return 1;
     if (strcmp(palabra, "lea") == 0) return 1;
     if (strcmp(palabra, "xchg") == 0) return 1;
 
-    // Operaciones aritmeticas
+    // 4. Operaciones aritmeticas
     if (strcmp(palabra, "add") == 0) return 1;
     if (strcmp(palabra, "sub") == 0) return 1;
     if (strcmp(palabra, "inc") == 0) return 1;
     if (strcmp(palabra, "dec") == 0) return 1;
+
+    // 5. Operaciones logicas
+    if (strcmp(palabra, "xor") == 0) return 1;
+    if (strcmp(palabra, "and") == 0) return 1;
+    if (strcmp(palabra, "or") == 0) return 1;
+    if (strcmp(palabra, "test") == 0) return 1;
+
+    // 6. Multiplicación y División
     if (strcmp(palabra, "mul") == 0) return 1;
     if (strcmp(palabra, "imul") == 0) return 1;
     if (strcmp(palabra, "div") == 0) return 1;
     if (strcmp(palabra, "idiv") == 0) return 1;
 
-    // Operaciones logicas
-    if (strcmp(palabra, "and") == 0) return 1;
-    if (strcmp(palabra, "or") == 0) return 1;
-    if (strcmp(palabra, "xor") == 0) return 1;
-    if (strcmp(palabra, "not") == 0) return 1;
-    if (strcmp(palabra, "neg") == 0) return 1;
-    if (strcmp(palabra, "test") == 0) return 1;
+    // 7. Comparación
     if (strcmp(palabra, "cmp") == 0) return 1;
 
-    // Operaciones de pila
+    // 8. Control de pila (Stack)
     if (strcmp(palabra, "push") == 0) return 1;
     if (strcmp(palabra, "pop") == 0) return 1;
 
-    // Saltos y control de flujo
-    if (strcmp(palabra, "jmp") == 0) return 1;
-    if (strcmp(palabra, "je") == 0) return 1;
-    if (strcmp(palabra, "jne") == 0) return 1;
-    if (strcmp(palabra, "jz") == 0) return 1;
+    // 9. Saltos condicionales
     if (strcmp(palabra, "jnz") == 0) return 1;
-    if (strcmp(palabra, "jg") == 0) return 1;
+        if (strcmp(palabra, "jne") == 0) return 1;
+    if (strcmp(palabra, "jz") == 0) return 1;
+        if (strcmp(palabra, "je") == 0) return 1;
+    if (strcmp(palabra, "jle") == 0) return 1;
     if (strcmp(palabra, "jl") == 0) return 1;
     if (strcmp(palabra, "jge") == 0) return 1;
-    if (strcmp(palabra, "jle") == 0) return 1;
+    if (strcmp(palabra, "jg") == 0) return 1;
+    if (strcmp(palabra, "jcc") == 0) return 1;      // Jamás en mi vida había visto esta
+    
+    
+    // 10. Control de Flujo
     if (strcmp(palabra, "call") == 0) return 1;
     if (strcmp(palabra, "ret") == 0) return 1;
+    if (strcmp(palabra, "jmp") == 0) return 1;
+    
+    // 12. Extensión de datos
+    if (strcmp(palabra, "movzx") == 0) return 1;    // 12.1 Extensión con ceros
+    if (strcmp(palabra, "movsx") == 0) return 1;    // 12.2 Extensión con signo
 
-    // Desplazamientos
+    // 13. Desplazamientos y rotaciones
+    //      13.1 Desplazamientos lógicos y aritméticos
     if (strcmp(palabra, "shl") == 0) return 1;
     if (strcmp(palabra, "shr") == 0) return 1;
     if (strcmp(palabra, "sar") == 0) return 1;
+        //  13.2 Rotaciones
+    if (strcmp(palabra, "rol") == 0) return 1;
+    if (strcmp(palabra, "ror") == 0) return 1;
+
+    // 14. Operaciones aritméticas complementarias
+    if (strcmp(palabra, "neg") == 0) return 1;      // 14.1 Negación
+    if (strcmp(palabra, "not") == 0) return 1;      // 14.2 Complemento a uno
+    if (strcmp(palabra, "adc") == 0) return 1;      // 14.3 Suma con acarreo
+    if (strcmp(palabra, "sbb") == 0) return 1;      // 14.4 Resta con préstamos
+
+    // 15. Operaciones con cadenas
+        // 15.1 Movimiento de cadenas
+    if (strcmp(palabra, "movsb") == 0) return 1;
+    if (strcmp(palabra, "movsw") == 0) return 1;
+        if (strcmp(palabra, "movsd") == 0) return 1;
+    // 15.2 Carga de cadenas
+    if (strcmp(palabra, "lodsb") == 0) return 1;
+    if (strcmp(palabra, "lodsw") == 0) return 1;
+        if (strcmp(palabra, "lodsd") == 0) return 1;
+    // Almacenamiento de cadenas (STOS)
+    if (strcmp(palabra, "stosb") == 0) return 1;
+    if (strcmp(palabra, "stosw") == 0) return 1;
+        if (strcmp(palabra, "stosd") == 0) return 1;
+    // 15,4 Comparación de cadenas
+    if (strcmp(palabra, "cmpsb") == 0) return 1;
+    if (strcmp(palabra, "cmpsw") == 0) return 1;
+        if (strcmp(palabra, "cmpsd") == 0) return 1;
+    
+        // 15.5 PREFIJOS DE REPETICIÓN
+    if (strcmp(palabra, "rep") == 0) return 1;
+        if (strcmp(palabra, "repe") == 0) return 1;
+        if (strcmp(palabra, "repz") == 0) return 1;
+    if (strcmp(palabra, "repne") == 0) return 1;
+        if (strcmp(palabra, "repnz") == 0) return 1;
 
     return 0;
 }

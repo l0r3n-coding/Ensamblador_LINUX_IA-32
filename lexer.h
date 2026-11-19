@@ -19,7 +19,6 @@ typedef struct {
     char *lexema;
     size_t numeroLinea;
 } Token;
-};
 
 
 #endif                      //lexer.h
