@@ -199,10 +199,14 @@ static int es_numero(char *palabra){ // determina si una palabra que leyo lexer 
     }
     return 1;
 }
-
+// antes de lo que lo que puse faltaba funcion como las anteriores pero para identificar el tipo de token que es una palabra
+static TipoToken clasificar_palabra(char *palabra){
 /*
 Creo que faltarian 5 funciones que son las de los tokens. 
 1. Que reciba la palabra y determine que es, de los que puse ahorita. No se como hacerle para que se pueda leer tanto en minuscula como mayuscula.
+*/
+
+/*
 2. Guardar tokens y su tipo, como los que puso la maestra en el doc. 
 3.  El que analice las lines del archivo .asm y las recorra e identifique. 
 4. Funcion que libere la memoria dinamica utilizada por los tokens y los lexemas 
