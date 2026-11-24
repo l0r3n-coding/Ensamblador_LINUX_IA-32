@@ -4,11 +4,6 @@
 #include <ctype.h>
 #include "lexer.h"
 
-void minusculas(){
-    
-}
-
-
 // En orden del documento de la profesora
 static int es_registro(char *palabra) {            // Registros
     if (strcmp(palabra, "eax") == 0) return 1;
@@ -67,7 +62,6 @@ static int es_mnemonico(char *palabra) {            // Comprueba si la palabra e
     if (strcmp(palabra, "jg") == 0) return 1;
     if (strcmp(palabra, "jcc") == 0) return 1;      // Jamás en mi vida había visto esta
     
-    
     // 10. Control de Flujo
     if (strcmp(palabra, "call") == 0) return 1;
     if (strcmp(palabra, "ret") == 0) return 1;
@@ -120,102 +114,402 @@ static int es_mnemonico(char *palabra) {            // Comprueba si la palabra e
     return 0;
 }
 
-// Compara una palabra con una lista. Asi no hacemos un strcmp por cada instruccion xd
-static int esta_en_lista(char *palabra, const char *lista[], int n){
-    for (int i = 0; i < n; i++){ // Recorre la lista desde la posición 0 hasta la posición n-1
-        if (strcmp(palabra, lista[i]) == 0) return 1;
-    }
+// Comprueba si la palabra es una directiva del ensamblador
+static int es_directiva(char *palabra){
+
+    // Secciones del programa
+    if (strcmp(palabra, "section") == 0) return 1;
+    if (strcmp(palabra, ".data") == 0) return 1;
+    if (strcmp(palabra, ".text") == 0) return 1;
+    if (strcmp(palabra, ".bss") == 0) return 1;
+
+    // Declaracion de simbolos
+    if (strcmp(palabra, "global") == 0) return 1;
+    if (strcmp(palabra, "extern") == 0) return 1;
+    if (strcmp(palabra, "equ") == 0) return 1;
+
+    // Declaracion de datos
+    if (strcmp(palabra, "db") == 0) return 1;
+    if (strcmp(palabra, "dw") == 0) return 1;
+    if (strcmp(palabra, "dd") == 0) return 1;
+
+    // Reserva de memoria
+    if (strcmp(palabra, "resb") == 0) return 1;
+    if (strcmp(palabra, "resw") == 0) return 1;
+    if (strcmp(palabra, "resd") == 0) return 1;
+
+    // Tamaño de los operandos
+    if (strcmp(palabra, "byte") == 0) return 1;
+    if (strcmp(palabra, "word") == 0) return 1;
+    if (strcmp(palabra, "dword") == 0) return 1;
+
+    if (strcmp(palabra, "bits") == 0) return 1;
+
     return 0;
 }
 
-static int es_registro(char *palabra){
-    const char *registros[] = {
-        "eax", "ebx", "ecx", "edx", "esi", "edi", "esp", "ebp",
-        "ax", "bx", "cx", "dx", "si", "di", "sp", "bp",
-        "al", "ah", "bl", "bh", "cl", "ch", "dl", "dh",
-        "cs", "ds", "es", "ss", "fs", "gs"
-    };
-    return esta_en_lista(palabra, registros, sizeof(registros)/sizeof(registros[0])); // Llama a la funcion esta_en_lista y le pasa:
-// (palabra que queremos buscar, el arreglo donde vamos a buscar, cuántos elementos tiene el arreglo) 
-// tamaño total del arreglo / tamaño elemento = # elementos 
-}
+// Decidir tipo numero. Evalua si es decimal, hexadecimal o binario
+// 1. Recibe la palabra y calcula su longitud
+static int tipo_numero(char *palabra){
+// Durante prueba 1. Imprime 3, es decir token no imrprime o guarda tipo numero, solo detecta que son numeros
 
-static int es_mnemonico(char *palabra){
-    // Instrucciones de la referencia IA-32 (y algunas formas usuales de NASM).
-    const char *mnemonicos[] = {
-        "mov", "lea", "xchg", "movzx", "movsx",
-        "add", "sub", "inc", "dec", "adc", "sbb",
-        "xor", "and", "or", "test", "not", "neg", "cmp",
-        "mul", "imul", "div", "idiv",
-        "push", "pop", "call", "ret", "jmp",
-        "je", "jz", "jne", "jnz", "jg", "jge", "jl", "jle",
-        "shl", "shr", "sar", "rol", "ror",
-        "movsb", "movsw", "movsd", "lodsb", "lodsw", "lodsd",
-        "stosb", "stosw", "stosd", "cmpsb", "cmpsw", "cmpsd",
-        "rep", "repe", "repz", "repne", "repnz", "int", "nop"
-    };
-    return esta_en_lista(palabra, mnemonicos, sizeof(mnemonicos)/sizeof(mnemonicos[0]));
-}
+    int n = strlen(palabra);
 
-static int es_directiva(char *palabra){
-    const char *directivas[] = {
-        "section", "segment", "global", "extern", "bits", "default",
-        "db", "dw", "dd", "dq", "resb", "resw", "resd", "resq",
-        "equ", "times", "byte", "word", "dword", "qword",
-        ".text", ".data", ".bss", ".rodata"
-    };
-    return esta_en_lista(palabra, directivas, sizeof(directivas)/sizeof(directivas[0]));
-}
+    if (n == 0) // Comprobar si es cadena vacoa 
+        return 0; 
 
-static int es_numero(char *palabra){ // determina si una palabra que leyo lexer es un num valido
-    char *fin;
-    if (palabra[0] == '\0') return 0; // ¿cadena vacia?
-    // strtoll acepta decimales y 0xFF
-    // strtoll significa string to long long y convierte una cadena a un entero de tipo long long
-    // strtoll intenta convertir la cadena a un entero long long.
-    // El 0 indica que detecte automáticamente la base numérica.
-    // Reconoce, por ejemplo, 123 (decimal) y 0xFF (hexadecimal).
-    strtoll(palabra, &fin, 0);
-    if (*fin == '\0' && fin != palabra) return 1;
+// Numeros hexa terminen en h o 0x
+// Numeros hexadecimales: 0xFF o 0FFh
+    if (n > 1 && ((palabra[0] == '0' && palabra[1] == 'x') ||
+                (palabra[n-1] == 'h' && isdigit((unsigned char)palabra[0])))){
 
-    int len = strlen(palabra); // longitud palabra 
-    if (len < 2) return 0;
-    char sufijo = tolower((unsigned char)palabra[len-1]);
-    int base = (sufijo == 'h') ? 16 : (sufijo == 'b') ? 2 : (sufijo == 'o' || sufijo == 'q') ? 8 : 0;
-    if (base == 0) return 0;
-    for (int i = 0; i < len-1; i++){
-        char c = tolower((unsigned char)palabra[i]);
-        int valor = isdigit((unsigned char)c) ? c-'0' : (c >= 'a' && c <= 'f') ? c-'a'+10 : -1;
-        // Convierte el carácter a su valor numérico.
-        // isdigit comprueba si es un dígito entre 0 y 9
-        // c-'0' convierte, por ejemplo, '5' al entero 5
-        // Si es una letra entre 'a' y 'f', calcula su
-        // valor hexadecimal entre 10 y 15
-        // Si no es un carácter reconocido, asigna -1
-        
-        if (valor < 0 || valor >= base) return 0;
-        // valor < 0 significa que el carácter no es válido
-        // valor >= base significa que el dígito no existe en esa base
+        int inicio = 0;
+        int fin = n;
+
+        // Si empieza con 0x, ignoramos los primeros dos caracteres
+        if (palabra[0] == '0' && palabra[1] == 'x'){
+            inicio = 2;
+        }
+        // Si termina con h, ignoramos el ultimo caracter
+        else if (palabra[n-1] == 'h'){
+            fin = n-1;
+        }
+
+        // Comprobamos que existan digitos
+        if (inicio >= fin) return 0;
+
+        // Comprobamos que todos los caracteres sean hexadecimales
+        for (int i = inicio; i < fin; i++){
+            if (!isxdigit((unsigned char)palabra[i])) return 0;
+        }
+
+        return 1;
     }
+
+
+// Numeros binarios ya se que terminen con b o 0b 
+    if (n > 1 && ((palabra[0] == '0' && palabra[1] == 'b') ||
+                palabra[n-1] == 'b')){
+
+        int inicio = 0;
+        int fin = n;
+
+        // Si empieza con 0b, ignoramos los primeros dos caracteres
+        if (palabra[0] == '0' && palabra[1] == 'b'){
+            inicio = 2;
+        }
+        // Si termina con b, ignoramos el ultimo caracter
+        else if (palabra[n-1] == 'b'){
+            fin = n-1;
+        }
+
+        // Comprobamos que existan digitos
+        if (inicio >= fin) return 0;
+
+        // Comprobamos que todos los digitos sean 0 o 1
+        for (int i = inicio; i < fin; i++){
+            if (palabra[i] != '0' && palabra[i] != '1') return 0;
+        }
+
+        return 1;
+    }
+
+// Numeros decimales
+    for (int i = 0; i < n; i++){
+        if (!isdigit((unsigned char)palabra[i])) return 0;
+    }
+
     return 1;
 }
-// antes de lo que lo que puse faltaba funcion como las anteriores pero para identificar el tipo de token que es una palabra
-// TOKEN: elemento del código junto con su categoria
+
+// Funcion que indistantemente de lo que haya en el archivo lo pasara a minusculas
+static void minusculas(char *palabra){
+
+    for (int i = 0; palabra[i] != '\0'; i++){
+        palabra[i] = tolower((unsigned char)palabra[i]);
+    }
+}
+
+// Clasificacion del tipo de token al que pertenece la palabra
 static TipoToken clasificar_palabra(char *palabra){
 
-Creo que faltarian 5 funciones que son las de los tokens. 
-1. Que reciba la palabra y determine que es, de los que puse ahorita. No se como hacerle para que se pueda leer tanto en minuscula como mayuscula.
-*/
+    // Reservamos memoria para copiar la palabra
+    // El +1 es para guardar tambien el caracter '\0'
+    char *copia = malloc((strlen(palabra)+1)*sizeof(char));
+
+    if (copia == NULL){
+        perror("Error al reservar memoria para la palabra");
+        return TOKEN_DESCONOCIDO;
+    }
+
+    strcpy(copia, palabra);              // Copiamos para no modificar la original
+
+    minusculas(copia);                   // Funcion que hicimos al principio
+
+    // Si no coincide con ninguna de las categorias de abajo,
+    // suponemos que es un identificador (una etiqueta, variable, etc.)
+    TipoToken tipo = TOKEN_IDENTIFICADOR;
+
+    if (es_registro(copia) == 1){
+        tipo = TOKEN_REGISTRO;
+    }
+    else if (es_mnemonico(copia) == 1){
+        tipo = TOKEN_MNEMONICO;
+    }
+    else if (es_directiva(copia) == 1){
+        tipo = TOKEN_DIRECTIVA;
+    }
+    else if (tipo_numero(copia) == 1){
+        tipo = TOKEN_NUMERO;
+    }
+
+    free(copia);                         // Ya no necesitamos la copia
+
+    return tipo;                         // Regresamos la categoria encontrada
+}
+
+// Prueba 1. Ver que imprime 
+// Funcion temporal para comprobar que funciona la clasificacion
 
 /*
-2. Guardar tokens y su tipo, como los que puso la maestra en el doc. 
-3.  El que analice las lines del archivo .asm y las recorra e identifique. 
-4. Funcion que libere la memoria dinamica utilizada por los tokens y los lexemas 
-5. Funcion que recorra el arreglo de tokens y de el tipo, lexema y numero de linea
-No se por ejemplo que muestre : MNEMONICO mov Linea 1, REGISTRO eax Linea 1, COMA , Linea 1, NUMERO 10 Linea 1. Algo así no se 
-Hasta aqui mi reporte Joaquin
+mov: 0
+eax: 1
+section: 8
+255: 3
+0xFF: 3
+1010b: 3
+mensaje: 2
+MOV: 0
+*/ 
+
+/*
+Funcion para almacenar los tokens en memoria 
+// Por la estructura en lexer. h seria algo asi
+token[0]:
+mov
+tipo = TOKEN_MNEMONICO
+numeroLinea = 1
 */
- 
 
+// Prueba 2. Guardar cada palabra que ya clasificamos dentro de un arreglo dinamico de estructuras
+// Funcion para guardar los tokens que ya fueron clasificados
+static int agregar_token(Token **tokens, int *total,
+                         TipoToken tipo, char *palabra,
+                         size_t numeroLinea){
 
+    // Reservamos espacio para un token nuevo
+    Token *temp = realloc(*tokens, (*total+1)*sizeof(Token));
 
+    if (temp == NULL){
+        perror("Error en REALLOC al asignar memoria");
+        return 0;
+    }
+
+    *tokens = temp;
+
+    // Reservamos memoria para guardar la palabra
+    char *lexema = malloc((strlen(palabra)+1)*sizeof(char));
+
+    if (lexema == NULL){
+        perror("Error en MALLOC al asignar memoria");
+        return 0;
+    }
+
+    strcpy(lexema, palabra);
+
+    // Se guardan los datos del token llenando los tres campos que se definio en la estructura de token en lexer.h
+    (*tokens)[*total].tipo = tipo;
+    (*tokens)[*total].lexema = lexema;
+    (*tokens)[*total].numeroLinea = numeroLinea;
+
+    (*total)++;
+
+    return 1;
+}
+
+/*
+Lexema: mov | Tipo: 0 | Linea: 1
+Lexema: eax | Tipo: 1 | Linea: 1
+Lexema: , | Tipo: 4 | Linea: 1
+Lexema: 15 | Tipo: 3 | Linea: 1
+Total de tokens: 4
+*/
+
+// Liberamos la memoria utilizada por los tokens
+void liberar_tokens(Token *tokens, int total){
+
+    for (int i = 0; i < total; i++){
+        free(tokens[i].lexema);
+    }
+
+    free(tokens);
+}
+
+// Funcion que supuestamente deberia de recorrer caracter por caracter y separar las palabras y los simbolos
+// Analiza una linea del archivo caracter por caracter
+static int analizar_linea(char *linea, size_t numeroLinea,
+                          Token **tokens, int *total){
+
+    int i = 0;
+    int n = strlen(linea);
+
+    while (i < n){
+
+        // Ignoramos espacios y tabulaciones
+        if (isspace((unsigned char)linea[i])){
+            i++;
+            continue;
+        }
+
+        // Si encontramos un comentario dejamos de leer la linea
+        if (linea[i] == ';'){
+            break;
+        }
+
+        // Reconocimiento de simbolos
+        TipoToken tipo = TOKEN_DESCONOCIDO;
+
+        if (linea[i] == ','){
+            tipo = TOKEN_COMA;
+        }
+        else if (linea[i] == '['){
+            tipo = TOKEN_CORCHETE_ABRE;
+        }
+        else if (linea[i] == ']'){
+            tipo = TOKEN_CORCHETE_CIERRA;
+        }
+        else if (linea[i] == '+' || linea[i] == '-' ||
+                 linea[i] == '*' || linea[i] == '/'){
+            tipo = TOKEN_OPERADOR;
+        }
+
+        // Si encontramos un simbolo lo guardamos
+        if (tipo != TOKEN_DESCONOCIDO){
+
+            char simbolo[2];
+
+            simbolo[0] = linea[i];
+            simbolo[1] = '\0';
+
+            if (agregar_token(tokens, total, tipo,
+                              simbolo, numeroLinea) == 0){
+                return 0;
+            }
+
+            i++;
+            continue;
+        }
+
+        // Reconocimiento de palabras y numeros
+        if (isalnum((unsigned char)linea[i]) ||
+            linea[i] == '_' || linea[i] == '.'){
+
+            int inicio = i;
+
+            // Avanzamos hasta encontrar el final de la palabra
+            while (i < n &&
+                  (isalnum((unsigned char)linea[i]) ||
+                   linea[i] == '_' || linea[i] == '.')){
+
+                i++;
+            }
+
+            int longitud = i-inicio;
+
+            // Reservamos memoria para la palabra encontrada
+            char *palabra = malloc((longitud+1)*sizeof(char));
+
+            if (palabra == NULL){
+                perror("Error al reservar memoria");
+                return 0;
+            }
+
+            // Copiamos los caracteres de la palabra
+            for (int j = 0; j < longitud; j++){
+                palabra[j] = linea[inicio+j];
+            }
+
+            palabra[longitud] = '\0';
+
+            // Clasificamos la palabra
+            tipo = clasificar_palabra(palabra);
+
+            // Guardamos el token
+            if (agregar_token(tokens, total, tipo,
+                              palabra, numeroLinea) == 0){
+
+                free(palabra);
+                return 0;
+            }
+
+            free(palabra);
+            continue;
+        }
+
+        // Si el caracter no pertenece a ninguna categoria
+        char desconocido[2];
+
+        desconocido[0] = linea[i];
+        desconocido[1] = '\0';
+
+        if (agregar_token(tokens, total, TOKEN_DESCONOCIDO,
+                          desconocido, numeroLinea) == 0){
+            return 0;
+        }
+
+        i++;
+    }
+
+    return 1;
+}
+
+/*
+Prueba 3: Ver que si funcione funcion analizar_linea
+*/
+/*Lexema: mov | Tipo: 0 | Linea: 1
+Lexema: eax | Tipo: 1 | Linea: 1
+Lexema: , | Tipo: 4 | Linea: 1
+Lexema: [ | Tipo: 5 | Linea: 1
+Lexema: ebp | Tipo: 1 | Linea: 1
+Lexema: - | Tipo: 7 | Linea: 1
+Lexema: 4 | Tipo: 3 | Linea: 1
+Lexema: ] | Tipo: 6 | Linea: 1
+Total de tokens: 8
+*/
+
+// Recibimos todas las lineas que guardo el main en 3aetapa.c
+Token *analizar_lineas(char **lineas, int n, int *total){
+
+    Token *tokens = NULL;
+    *total = 0;
+
+    // Recorremos todas las lineas del archivo
+    for (int i = 0; i < n; i++){
+
+        // Analizamos cada linea individualmente
+        if (analizar_linea(lineas[i], i+1,
+                           &tokens, total) == 0){
+
+            liberar_tokens(tokens, *total);
+            *total = -1;
+
+            return NULL;
+        }
+    }
+
+    return tokens;
+}
+
+// Imprimimos todos los tokens encontrados
+void imprimir_tokens(Token *tokens, int total){
+
+    for (int i = 0; i < total; i++){
+
+        printf("Lexema: %s | Tipo: %d | Linea: %zu\n",
+               tokens[i].lexema,
+               tokens[i].tipo,
+               tokens[i].numeroLinea);
+    }
+
+    printf("Total de tokens: %d\n", total);
+}
